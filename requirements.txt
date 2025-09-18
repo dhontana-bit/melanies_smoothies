@@ -1,2 +1,3 @@
+#requirements.txt
 flake-snowspark-python
 streamlit
