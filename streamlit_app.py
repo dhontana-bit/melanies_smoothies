@@ -10,14 +10,11 @@ st.write(
   """
 )
 
+cnx = st.connection("snowflake")
+session = cnx.session()
+my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'), col('SEARCH_ON'))
 
-
-
-
-cnx=st.connection("snowflake")
-session=cnx.session()
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'),col('SEARCH_ON'))
-name=st.text_input("How is your name?")
+name = st.text_input("How is your name?")
 if name:
     # Convert the Snowpark Dataframe to a Pandas Dataframe so we can use the LOC function
     pd_df = my_dataframe.to_pandas()
@@ -33,7 +30,7 @@ if name:
     if ingredients_list:
         ingredients_string = ''
     
-        for fruit_chosen in ingredients_list:
+        for i, fruit_chosen in enumerate(ingredients_list):
             ingredients_string += fruit_chosen + ' '
     
             search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
@@ -49,7 +46,8 @@ if name:
             my_insert_stmt = """ insert into smoothies.public.orders(ingredients,name_on_order )
                     values ('""" + ingredients_string + "',\'" + name +"""')"""
             
-            time_to_insert=st.button('Submit Order')
+            # ✅ Clave única para cada botón del bucle
+            time_to_insert = st.button('Submit Order', key=f"submit_{i}_{fruit_chosen}")
             
             if time_to_insert:
                 session.sql(my_insert_stmt).collect()
